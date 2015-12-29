@@ -16,6 +16,30 @@ const (
 	ftTLM = 0x20
 )
 
+var urlSchemePrefix = []string{
+	"http://www.",
+	"https://www.",
+	"http://",
+	"https://",
+}
+
+var urlEncoding = []string{
+	".com/",
+	".org/",
+	".edu/",
+	".net/",
+	".info/",
+	".biz/",
+	".gov/",
+	".com",
+	".org",
+	".edu",
+	".net",
+	".info",
+	".biz",
+	".gov",
+}
+
 type EddystoneUIDFrameField struct {
 	frameType byte
 	txPower   byte
@@ -27,7 +51,7 @@ type EddystoneURLFrameField struct {
 	frameType  byte
 	txPower    byte
 	urlScheme  byte
-	encodedURL [18]byte
+	encodedURL []byte
 }
 
 type EddystoneParser struct {
@@ -68,20 +92,43 @@ func NewEddystoneParser(adData *gatt.Advertisement) *EddystoneParser {
 	return ed
 }
 
-func (e *EddystoneParser) parseURL(beaconData []byte) error {
-	fmt.Println("beacon data size=", len(beaconData))
-	if len(beaconData) != 18 && len(beaconData) != 20 {
-		errString := fmt.Sprintf("Size not support uid frame:", len(beaconData), beaconData)
-		return errors.New(errString)
+func decodeURL(prefix byte, encodedURL []byte) (string, error) {
+	if int(prefix) >= len(urlSchemePrefix) {
+		return "", errors.New("invaild prefix")
 	}
 
+	s := urlSchemePrefix[prefix]
+
+	for _, b := range encodedURL {
+		switch {
+		case 0x00 <= b && b <= 0x13:
+			s += urlEncoding[b]
+		case 0x0e <= b && b <= 0x20:
+			fallthrough
+		case 0x7f <= b && b <= 0xff:
+			return "", errors.New("invalid byte")
+		default:
+			s += string(b)
+		}
+	}
+
+	return s, nil
+}
+
+func (e *EddystoneParser) parseURL(beaconData []byte) error {
 	e.urlRawData.frameType = beaconData[0]
 	e.urlRawData.txPower = beaconData[1]
+	e.urlRawData.urlScheme = beaconData[2]
+	for i := 0; i+3 < len(beaconData); i++ {
+		e.urlRawData.encodedURL = append(e.urlRawData.encodedURL, beaconData[3+i])
+	}
+
+	url, _ := decodeURL(e.urlRawData.urlScheme, e.urlRawData.encodedURL)
+	e.UrlString = url
 	return nil
 }
 
 func (e *EddystoneParser) parseUID(beaconData []byte) error {
-	fmt.Println("beacon data size=", len(beaconData))
 	if len(beaconData) != 18 && len(beaconData) != 20 {
 		errString := fmt.Sprintf("Size not support uid frame:", len(beaconData), beaconData)
 		return errors.New(errString)
@@ -104,7 +151,6 @@ func (e *EddystoneParser) parseUID(beaconData []byte) error {
 	//Format "%x%x%x%x-%x%x%x%x-%x%x%x%x-%x%x%x%x")
 	e.UidString = fmt.Sprintf("%x-%x-%x-%x", e.uidRawData.beaconID[:4], e.uidRawData.beaconID[4:8], e.uidRawData.beaconID[8:12], e.uidRawData.beaconID[12:16])
 	e.UidString = strings.ToUpper(e.UidString)
-	//fmt.Println(e.UidString)
 	return nil
 }
 
@@ -131,5 +177,5 @@ func (e *EddystoneParser) printUID() {
 }
 
 func (e *EddystoneParser) printURL() {
-	fmt.Println("URL:")
+	fmt.Println("URL:", e.UrlString)
 }

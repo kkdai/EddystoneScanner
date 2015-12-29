@@ -44,7 +44,7 @@ func onPeriphDiscovered(p gatt.Peripheral, a *gatt.Advertisement, rssi int) {
 		fmt.Println("\nServices=", a.Services)
 		fmt.Println("Local Name=", a.LocalName)
 		if len(a.ServiceData) > 0 {
-			fmt.Println("S Data UUID=", a.ServiceData, a.ServiceData[0].UUID.String())
+			//fmt.Println("S Data UUID=", a.ServiceData, a.ServiceData[0].UUID.String())
 			//fmt.Println("S Data Data=", string(a.ServiceData[0].Data))
 
 			ed := NewEddystoneParser(a)
