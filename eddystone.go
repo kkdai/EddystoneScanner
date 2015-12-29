@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/paypal/gatt"
 )
@@ -87,7 +88,6 @@ func (e *EddystoneParser) parseUID(beaconData []byte) error {
 	}
 
 	//Copy data to raw data
-	fmt.Printf("==> %x\n", beaconData)
 	e.uidRawData.frameType = beaconData[0]
 	e.uidRawData.txPower = beaconData[1]
 
@@ -102,13 +102,9 @@ func (e *EddystoneParser) parseUID(beaconData []byte) error {
 
 	//Parse UID
 	//Format "%x%x%x%x-%x%x%x%x-%x%x%x%x-%x%x%x%x")
-	fmt.Printf("==< %x\n", e.uidRawData.beaconID)
-	for i := 0; i < 16; i++ {
-		e.UidString = e.UidString + fmt.Sprintf("%x", e.uidRawData.beaconID[i])
-		if (i+1)%4 == 0 {
-			e.UidString = e.UidString + "-"
-		}
-	}
+	e.UidString = fmt.Sprintf("%x-%x-%x-%x", e.uidRawData.beaconID[:4], e.uidRawData.beaconID[4:8], e.uidRawData.beaconID[8:12], e.uidRawData.beaconID[12:16])
+	e.UidString = strings.ToUpper(e.UidString)
+	//fmt.Println(e.UidString)
 	return nil
 }
 
@@ -128,7 +124,7 @@ func (e *EddystoneParser) PrintBeacon() {
 }
 
 func (e *EddystoneParser) printUID() {
-	fmt.Printf("UID:%x\n", e.UidString)
+	fmt.Printf("UID: %s\n", e.UidString)
 	if e.UidRFU != "" {
 		fmt.Printf("RFU:%x\n", e.UidRFU)
 	}
