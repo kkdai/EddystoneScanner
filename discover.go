@@ -1,5 +1,3 @@
-// +build
-
 package main
 
 import (
@@ -28,21 +26,34 @@ func onStateChanged(d gatt.Device, s gatt.State) {
 	}
 }
 
+const eddystoneServicesUUID string = "FEAA"
+
+func validEddystone(serviceData []gatt.UUID) bool {
+	if len(serviceData) > 0 && strings.ToUpper(serviceData[0].String()) == eddystoneServicesUUID {
+		return true
+	}
+	return false
+}
+
 func onPeriphDiscovered(p gatt.Peripheral, a *gatt.Advertisement, rssi int) {
-	fmt.Println("uuid=", p.ID(), " a.uuid=", a.Services, " all ad=", a)
+	//fmt.Println("uuid=", p.ID(), " a.uuid=", a.Services, " all ad=", a)
 	id := strings.ToUpper(flag.Args()[0])
-	if len(a.Services) > 0 { // && a.ServiceData[0].UUID.String(){
-		for _, v := range a.Services {
-			fmt.Printf("%s", v.String())
-		}
+	if len(a.Services) > 0 && validEddystone(a.Services) { // && a.ServiceData[0].UUID.String(){
+		fmt.Println("Eddystone Beacon Found!.....")
+
 		fmt.Println("\nServices=", a.Services)
 		fmt.Println("Local Name=", a.LocalName)
 		if len(a.ServiceData) > 0 {
-			fmt.Println("S Data=", a.ServiceData, a.ServiceData[0].UUID.String())
+			fmt.Println("S Data UUID=", a.ServiceData, a.ServiceData[0].UUID.String())
+			//fmt.Println("S Data Data=", string(a.ServiceData[0].Data))
+
+			ed := NewEddystoneParser(a)
+			ed.PrintBeacon()
+
 		}
-		fmt.Println("M Data=", a.ManufacturerData)
-		fmt.Println("Over Service=", a.OverflowService)
-		fmt.Println("Solicited Services=", a.SolicitedService)
+		//fmt.Println("M Data=", a.ManufacturerData)
+		//fmt.Println("Over Service=", a.OverflowService)
+		//fmt.Println("Solicited Services=", a.SolicitedService)
 	}
 
 	if strings.ToUpper(p.ID()) != id {
