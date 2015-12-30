@@ -1,4 +1,4 @@
-Eddystone Scanner in Golang
+Eddystone Beacon Scanner in Golang
 ==================
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/kkdai/EddystoneScanner/master/LICENSE)  [![GoDoc](https://godoc.org/github.com/kkdai/EddystoneScanner?status.svg)](https://godoc.org/github.com/kkdai/EddystoneScanner)  [![Build Status](https://travis-ci.org/kkdai/react-diff.svg?branch=master)](https://travis-ci.org/kkdai/EddystoneScanner)
