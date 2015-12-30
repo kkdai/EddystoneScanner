@@ -53,6 +53,14 @@ type EddystoneURLFrameField struct {
 	urlScheme  byte
 	encodedURL []byte
 }
+type EddystoneTLMFrameField struct {
+	frameType      byte
+	ver            byte
+	batteryVoltage [2]byte
+	temperature    [2]byte
+	advPDU         [4]byte
+	secCNT         [4]byte
+}
 
 type EddystoneParser struct {
 	BeaconName      string
@@ -60,14 +68,17 @@ type EddystoneParser struct {
 	FrameTypeString string
 	TxPower         int8
 
-	//UID frame only
+	//UID frame
 	uidRawData EddystoneUIDFrameField
 	UidString  string
 	UidRFU     string
 
-	//URL frame only
+	//URL frame
 	urlRawData EddystoneURLFrameField
 	UrlString  string
+
+	//TLM frame
+	tlmRawData EddystoneTLMFrameField
 }
 
 func NewEddystoneParser(adData *gatt.Advertisement) *EddystoneParser {
@@ -85,6 +96,10 @@ func NewEddystoneParser(adData *gatt.Advertisement) *EddystoneParser {
 		fmt.Println("It is URL beacon, parse data..")
 		ed.FrameTypeString = "URL"
 		ed.parseURL(adData.ServiceData[0].Data)
+	case ftTLM:
+		fmt.Println("It is TLM beacon, parse data..")
+		ed.FrameTypeString = "TLM"
+		ed.parseTLM(adData.ServiceData[0].Data)
 	default:
 		fmt.Println("Eddystone beacon not support.")
 	}
@@ -115,7 +130,31 @@ func decodeURL(prefix byte, encodedURL []byte) (string, error) {
 	return s, nil
 }
 
+func (e *EddystoneParser) parseTLM(beaconData []byte) error {
+	// TODO  No device on hand, need test
+	//Copy raw data first
+	e.tlmRawData.frameType = beaconData[0]
+	e.tlmRawData.ver = beaconData[1]
+	e.tlmRawData.batteryVoltage[0] = beaconData[2]
+	e.tlmRawData.batteryVoltage[1] = beaconData[3]
+	e.tlmRawData.temperature[0] = beaconData[4]
+	e.tlmRawData.temperature[1] = beaconData[5]
+
+	e.tlmRawData.advPDU[0] = beaconData[6]
+	e.tlmRawData.advPDU[1] = beaconData[7]
+	e.tlmRawData.advPDU[2] = beaconData[8]
+	e.tlmRawData.advPDU[3] = beaconData[9]
+
+	e.tlmRawData.secCNT[0] = beaconData[10]
+	e.tlmRawData.secCNT[1] = beaconData[11]
+	e.tlmRawData.secCNT[2] = beaconData[12]
+	e.tlmRawData.secCNT[3] = beaconData[13]
+	//Decode data
+	return nil
+}
+
 func (e *EddystoneParser) parseURL(beaconData []byte) error {
+	// TODO  No device on hand, need test
 	//Copy raw data first
 	e.urlRawData.frameType = beaconData[0]
 	e.urlRawData.txPower = beaconData[1]
@@ -131,7 +170,7 @@ func (e *EddystoneParser) parseURL(beaconData []byte) error {
 
 func (e *EddystoneParser) parseUID(beaconData []byte) error {
 	if len(beaconData) != 18 && len(beaconData) != 20 {
-		errString := fmt.Sprintf("Size not support uid frame:", len(beaconData), beaconData)
+		errString := fmt.Sprintf("Size not support uid frame:%d => %v", len(beaconData), beaconData)
 		return errors.New(errString)
 	}
 
@@ -158,7 +197,6 @@ func (e *EddystoneParser) parseUID(beaconData []byte) error {
 //Print the beacon detail information
 func (e *EddystoneParser) PrintBeacon() {
 	fmt.Println("Beacon Name:", e.BeaconName)
-	fmt.Println("It is ", e.FrameTypeString, " frame eddystone")
 	fmt.Println("TxPower:", e.TxPower)
 
 	switch e.frameType {
@@ -166,9 +204,19 @@ func (e *EddystoneParser) PrintBeacon() {
 		e.printUID()
 	case ftURL:
 		e.printURL()
+	case ftTLM:
+		e.printTLM()
 	default:
 		fmt.Println("Cannot find frame type")
 	}
+}
+func (e *EddystoneParser) printTLM() {
+	// TODO  No device on hand, need test
+	fmt.Printf("TLM ver:%x\n", e.tlmRawData.ver)
+	fmt.Printf("Battery : %x\n", e.tlmRawData.batteryVoltage)
+	fmt.Printf("Temperature: %x\n", e.tlmRawData.temperature)
+	fmt.Printf("Advertising PDU count: %x\n", e.tlmRawData.advPDU)
+	fmt.Printf("Time since power-on: %x\n", e.tlmRawData.secCNT)
 }
 
 func (e *EddystoneParser) printUID() {

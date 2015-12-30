@@ -26,6 +26,8 @@ func onStateChanged(d gatt.Device, s gatt.State) {
 	case gatt.StatePoweredOn:
 		fmt.Println("Scanning for eddystone beacon...")
 		d.Scan([]gatt.UUID{}, false)
+
+		fmt.Println("=====================================")
 		return
 	default:
 		d.StopScanning()
@@ -41,6 +43,7 @@ func onPeriphDiscovered(p gatt.Peripheral, a *gatt.Advertisement, rssi int) {
 		fmt.Println("Eddystone Beacon Found!.....")
 		ed := NewEddystoneParser(a)
 		ed.PrintBeacon()
+		fmt.Println("-------------------------------------")
 	}
 	return
 }
