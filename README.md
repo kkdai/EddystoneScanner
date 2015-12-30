@@ -1,7 +1,7 @@
 Eddystone Beacon Scanner in Golang
 ==================
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/kkdai/EddystoneScanner/master/LICENSE)  [![GoDoc](https://godoc.org/github.com/kkdai/EddystoneScanner?status.svg)](https://godoc.org/github.com/kkdai/EddystoneScanner)  [![Build Status](https://travis-ci.org/kkdai/react-diff.svg?branch=master)](https://travis-ci.org/kkdai/EddystoneScanner)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/kkdai/EddystoneScanner/master/LICENSE)  [![GoDoc](https://godoc.org/github.com/kkdai/EddystoneScanner?status.svg)](https://godoc.org/github.com/kkdai/EddystoneScanner)  [![Build Status](https://travis-ci.org/kkdai/EddystoneScanner.svg?branch=master)](https://travis-ci.org/kkdai/EddystoneScanner)
 
 ![](images/eddystone.jpg)
 
@@ -56,6 +56,7 @@ Using following eddystone beacon simulator if you don't have real one in hand.
 Inspired
 ---------------
 
+- [https://github.com/google/eddystone](https://github.com/google/eddystone)
 - [https://github.com/paypal/gatt](https://github.com/paypal/gatt)
 - [https://github.com/suapapa/go_eddystone](https://github.com/suapapa/go_eddystone)
 
