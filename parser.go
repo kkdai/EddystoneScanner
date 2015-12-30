@@ -116,13 +116,14 @@ func decodeURL(prefix byte, encodedURL []byte) (string, error) {
 }
 
 func (e *EddystoneParser) parseURL(beaconData []byte) error {
+	//Copy raw data first
 	e.urlRawData.frameType = beaconData[0]
 	e.urlRawData.txPower = beaconData[1]
 	e.urlRawData.urlScheme = beaconData[2]
 	for i := 0; i+3 < len(beaconData); i++ {
 		e.urlRawData.encodedURL = append(e.urlRawData.encodedURL, beaconData[3+i])
 	}
-
+	//Decode URL data
 	url, _ := decodeURL(e.urlRawData.urlScheme, e.urlRawData.encodedURL)
 	e.UrlString = url
 	return nil
@@ -154,6 +155,7 @@ func (e *EddystoneParser) parseUID(beaconData []byte) error {
 	return nil
 }
 
+//Print the beacon detail information
 func (e *EddystoneParser) PrintBeacon() {
 	fmt.Println("Beacon Name:", e.BeaconName)
 	fmt.Println("It is ", e.FrameTypeString, " frame eddystone")
